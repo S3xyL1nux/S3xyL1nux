@@ -1,0 +1,36 @@
+#!/bin/bash
+
+while : 
+do 
+
+sleep 5
+
+slsshax=`who -a | tail -1 | awk '{print $8}' | tr --delete "(.)"`
+slc1a=`date +%Y`
+slc1b=`date +%m`
+slc1c=`date +%d`
+slc1d=`date +%H`
+slc1e=`date +%M`
+slc1f=`date +%S`
+slssha1=`who -a | tail -1 | awk '{print $1}'`
+slssha8=`who -a | tail -1 | awk '{print $8}'`
+hostname=`hostname`
+hostname2=`echo "$HOME" | tr --delete "/home/"`
+final="$slssha8 is connected to $hostname by ssh, level: $slssha1 date: $slc1a-$slc1b-$slc1c time: $slc1d:$slc1e:$slc1f"
+
+if [[ $slsshax =~ ${num##[0-999999999999]*} ]] && [[ $slssha1 == root ]]; then
+mpg321 $HOME/beep.mp3 2>/dev/null
+zenity --info --text "$final" 2>/dev/null
+printf "
+$final" >> slssha.log
+fi
+
+if [[ $slsshax =~ ${num##[0-999999999999]*} ]] && [[ $slssha1 == $hostname2 ]]; then
+mpg321 $HOME/beep.mp3 2>/dev/null
+zenity --info --text "$final" 2>/dev/null
+printf "
+$final" >> slssha.log
+fi
+
+done
+
