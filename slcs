@@ -1,0 +1,56 @@
+#!/bin/bash
+
+echo
+echo -e "            \e[5m\e[32m*************************\e[0m"
+echo -e "            \e[5m\e[32m* \e[0m\e[5m\e[92m\e[1mS3xyL1nux spell check\e[0m \e[5m\e[32m*\e[0m"
+echo -e "            \e[5m\e[32m*************************\e[0m"
+echo
+
+START=$(date +%s.%N)
+
+rm $HOME/cs.txt 2>/dev/null
+
+word=$1
+
+if [ -z $word ]; then
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))menter word\e[0m"
+read word
+fi
+
+if [ -z $word ]; then
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))myou didn't set any word....\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mexit.\e[0m"
+echo
+exit 1
+fi
+
+cs1=`echo "$word" | /usr/bin/aspell -a | head -2 | tail -1 | tr --delete '*'`
+
+cat <<EOF > $HOME/cs.txt
+$cs1
+EOF
+
+cs2=`cat $HOME/cs.txt`
+
+if [[ -n $word ]] && [[ -z $cs2 ]]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mspell checking return with no error.\e[0m"
+echo
+fi
+
+if [[ -n $word ]] && [[ -n $cs2 ]]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))myou may have to check your spelling....\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mcorrections: $cs2\e[0m"
+echo
+fi
+
+rm $HOME/cs.txt
+
+END=$(date +%s.%N)
+DIFF=$(echo "$END - $START" | bc)
+
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mloading time $DIFF seconds\e[0m"
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mend.\e[0m"
