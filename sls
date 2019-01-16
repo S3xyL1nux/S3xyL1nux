@@ -11,6 +11,15 @@ echo
 echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mchoose service by a number 1 or 2: (1 for tny.im) or (2 for is.gd)\e[0m"
 read service
 
+if [ -z $service ]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mno number chosen\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mexit.\e[0m"
+echo
+exit 1
+fi
+
 if [ $service == 1 ]; then
 echo
 echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mtny.im has been choosen!\e[0m"
