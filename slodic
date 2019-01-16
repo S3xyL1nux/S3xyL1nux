@@ -1,5 +1,7 @@
 #!/bin/bash
 
+### must include and placed in $HOME ----> https://github.com/S3xyL1nux/S3xyL1nux/blob/master/dictionary.txt
+
 START=$(date +%s.%N)
 
 echo
