@@ -1,0 +1,222 @@
+#!/bin/bash
+
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))m\e[5mstart\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mscanning available wifi network/s...\e[0m"
+
+interface=`ip addr | tr --delete ':' | awk '$1 >= 1 && $1 <= 99' | awk '{print $2}' | grep -F 'w' | grep -F 'l'`
+sudo ifconfig $interface down
+sleep 1
+sudo ifconfig $interface up
+sleep 7
+wnlist=`nmcli dev wifi list`
+#wnlist=`sudo iwlist wlp2s0 scan | grep ESSID | sed 's/ESSI\D.//' | tr --delete '"' | sed 's/^ *//g'``
+
+if [[ -z $wnlist ]]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mno wifi network/s found, trying scan again.\e[0m"
+sudo ifconfig $interface down
+sleep 1
+sudo ifconfig $interface up
+sleep 7
+wnlist=`nmcli dev wifi list`
+#wnlist=`sudo iwlist wlp2s0 scan | grep ESSID | sed 's/ESSI\D.//' | tr --delete '"' | sed 's/^ *//g'`
+fi
+
+if [[ -z $wnlist ]]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mno wifi network/s found again, exit.\e[0m"
+exit
+fi
+
+if [[ -n $wnlist ]]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mwifi network/s scanned is/are as following...\e[0m"
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))m$wnlist\e[0m"
+fi
+
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))menter an essid name:\e[0m"
+read essid
+
+if [[ -z $essid ]]; then
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))messid name not entered..try enter it agin:\e[0m"
+read essid
+fi
+
+if [[ -z $essid ]]; then
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))messid is null, error exit.\e[0m"
+exit
+fi
+
+if [[ -n $essid ]]; then
+essid2='"'$essid'"'
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))menter a password associated with the essid name (if required or press enter for null):\e[0m"
+read password
+fi
+
+#if [[ -z $password ]]; then
+#echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mpassword not entered..try enter it again:\e[0m"
+#exit
+#fi
+
+#if [[ -z $password ]]; then
+#echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mpassword is null, error exit.\e[0m"
+#exit
+#fi
+
+if [[ -z $password ]]; then
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mnow trying to connect to $essid2 network...\e[0m"
+#sudo iwconfig $interface essid $essid key s:$password
+nmcli dev wifi connect ""$"$essid"$""
+sleep 10
+sudo dhclient $interface &>/dev/null
+sleep 10
+fi
+
+if [[ -n $password ]]; then
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mnow trying to connect to $essid2 network...\e[0m"
+#sudo iwconfig $interface essid $essid key s:$password
+nmcli dev wifi connect ""$"$essid"$"" password $password
+sleep 10
+sudo dhclient $interface &>/dev/null
+sleep 10
+fi
+
+myip=`hostname -I | awk '{print $1}'`
+hostip=`ip route | grep default | awk '{print $3}' | tail -1`
+
+if [[ -z $hostip ]]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mfailed to connect...check essid and password and try again, exit.\e[0m"
+echo
+exit 1
+fi
+
+pessid=`nmcli -t -f active,ssid, dev wifi | egrep '^yes' | cut -d\' -f2 | cut -c5-`
+pessid2='"'$pessid'"'
+
+wm()
+{
+slc1a=`date +%Y`
+slc1b=`date +%m`
+slc1c=`date +%d`
+slc1d=`date +%H`
+slc1e=`date +%M`
+slc1f=`date +%S`
+hostname=`hostname`
+
+slvpna=`ip addr | grep tun | grep inet | awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+
+slc6mac1=`ip addr | grep link/ether | head -1 | awk '{print $2}'`
+slc6mac2=`ip addr | grep link/ether | head -1 | awk '{print $2}'  | awk '{ printf "%s\n", substr($1,1,2) }'`
+slc6mac3=`ip addr | grep link/ether | head -1 | awk '{print $2}'  | awk '{ printf "%s\n", substr($1,4,5) }' | tr --delete ':'`
+slc6mac4=`echo "$slc6mac2"$"$slc6mac3" | sed 's/[a-z]/\U&/g'`
+slc6mac5=`cat $HOME/mac-vendor.txt | grep $slc6mac4 | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20}' | tr --delete '&'`
+
+slc6=`wget http://ipecho.net/plain -O - -q ; echo 2>/dev/null`
+
+slwmfix=`whois $slc6 > $HOME/slwm.txt 2>/dev/null`
+
+slc6x=`cat $HOME/slwm.txt | grep country | head -1 | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6xx=`cat $HOME/slwm.txt | grep address | head -4 | tail -3 | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6xxx=`cat $HOME/slwm.txt | grep owner | head -1 | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6x1=`cat $HOME/slwm.txt | grep Country | head -1 | awk '{print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6xx1=`cat $HOME/slwm.txt | grep Address | head -4 | tail -3 | awk '{print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6xxx1=`cat $HOME/slwm.txt | grep Owner | head -1 | awk '{print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6x2=`cat $HOME/slwm.txt | grep 'Organization Name' | head -1 | awk '{print $4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6x3=`cat $HOME/slwm.txt | grep 'Service Name' | head -1 | awk '{print $4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6x4=`cat $HOME/slwm.txt | grep 'netname:' | head -1 | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6x5=`cat $HOME/slwm.txt | grep 'netname:' | tail -1 | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+slc6x6=`cat $HOME/slwm.txt | grep 'descr:' | head -1 | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'`
+
+if [[ -n $slvpna ]]; then
+slvpna="Connected!"
+else
+slvpna="OFF!"
+fi
+
+if [[ -z $slc6 ]]; then
+slc6="No Internet Connection!"
+fi
+
+if [[ -n $slc6x ]] || [[ -n $slc6x1 ]]; then
+country="$slc6x $slc6x1"
+else
+country="not available"
+fi
+
+if [[ -n $slc6xx ]] || [[ -n $slc6xx1 ]]; then
+address="
+$slc6xx $slc6xx1"
+else
+address="not available"
+fi
+
+if [[ -n $slc6xxx ]] || [[ -n $slc6xxx1 ]] || [[ -n $slc6x6 ]]; then
+owner="$slc6xxx $slc6xxx1 $slc6x6"
+else
+owner="not available"
+fi
+
+if [[ -n $slc6x2 ]] || [[ -n $slc6x4 ]]; then
+OrganizationName="$slc6x2 $slc6x4"
+else
+OrganizationName="not available"
+fi
+
+if [[ -n $slc6x3 ]] || [[ -n $slc6x5 ]]; then
+ServiceName="$slc6x3 $slc6x5"
+else
+ServiceName="not available"
+fi
+
+echo
+echo '                        'whois me!
+echo ==========================================================
+echo '#' mac addr: $slc6mac1, vendor: $slc6mac5
+echo '#' ip : $slc6
+echo '#' vpn : $slvpna
+echo '#' country : $country
+echo '#' address : $address
+echo '#' owner : $owner
+echo '#' Organization Name : $OrganizationName
+echo '#' Service Name : $ServiceName
+echo '#' date: $slc1a-$slc1b-$slc1c time: $slc1d:$slc1e:$slc1f
+echo ==========================================================
+echo
+}
+
+if [[ -n $hostip ]] && [[ $essid != $pessid ]]; then
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mfaild to connect to $essid2 , switched to previous $pessid2 network.\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))myour local ip : $myip\e[0m"
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))myour router default ip : $hostip\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mlaunching whois me script...\e[0m"
+wm
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mexit.\e[0m"
+echo
+exit 1
+fi
+
+if [[ -n $hostip ]] && [[ $essid == $pessid ]]; then
+mpv $HOME/beep.mp3 &>/dev/null
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))msuccessed to connect to $essid2 with key: $password by $interface interface.\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))myour local ip : $myip\e[0m"
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))myour router default ip : $hostip\e[0m"
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mlaunching whois me script...\e[0m"
+wm
+echo
+echo -e "\e[1m\e[3$(( $RANDOM * 6 / 32767 + 1 ))mexit.\e[0m"
+echo
+exit 1
+fi
+
+#slcm
