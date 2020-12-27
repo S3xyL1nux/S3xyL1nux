@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#here oyu type how many days you would like to delay the uptime :
+#here you type how many days you would like to delay the uptime :
 delay="47"
 #here ^
 
@@ -74,7 +74,7 @@ echo
 echo "For more details see uptime(1)."
 }
 
-while getopts "psV:h*:" option; do
+while getopts "psVx:h*:" option; do
   case "${option}" in
     p) echo up $sldays days, $slhr2 $slmin2 && exit 0 ;;
     h) usage && exit 0 ;;
